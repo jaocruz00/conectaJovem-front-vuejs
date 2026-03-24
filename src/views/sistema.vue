@@ -5,6 +5,8 @@ import { useRouter } from "vue-router";
 import { toast } from "vue-sonner";
 import CadastroCoordenador from "./cadastroCoordenador.vue";
 import ListaCoordenadores from "./listaCoordenadores.vue";
+import CadastroFormulario from "./cadastroformulario.vue";
+import Relatorios from "./Relatorios.vue";
 
 const router = useRouter();
 
@@ -12,7 +14,7 @@ const nome = ref("");
 const email = ref("");
 const cargo = ref("");
 
-const tabAtiva = "coordenador";
+const tabAtiva = ref("coordenador");
 
 onMounted(async () => {
   try {
@@ -78,18 +80,22 @@ const logout = async () => {
             Gerenciamento de Coordenador
           </button>
           <button
-            @click="tabAtiva = 'forms'"
+            @click="tabAtiva = 'cadastroformulario'"
             :class="[
-              tabAtiva === 'forms' ? 'bg-white shadow' : 'hover:bg-gray-300',
+              tabAtiva === 'cadastroformulario'
+                ? 'bg-white shadow'
+                : 'hover:bg-gray-300',
             ]"
             class="py-2 text-sm font-medium rounded-md transition-all"
           >
             Cadastro de Formulário
           </button>
           <button
-            @click="tabAtiva = 'reports'"
+            @click="tabAtiva = 'relatorios'"
             :class="[
-              tabAtiva === 'reports' ? 'bg-white shadow' : 'hover:bg-gray-300',
+              tabAtiva === 'relatorios'
+                ? 'bg-white shadow'
+                : 'hover:bg-gray-300',
             ]"
             class="py-2 text-sm font-medium rounded-md transition-all"
           >
@@ -113,16 +119,17 @@ const logout = async () => {
             <CadastroCoordenador />
             <br />
             <br />
-            <ListaCoordenadores />
+            <Suspense>
+              <ListaCoordenadores />
+            </Suspense>
           </div>
 
-          <div v-if="tabAtiva === 'forms'">
-            <DemoGuide />
-            <FormBuilder class="mt-4" />
+          <div v-if="tabAtiva === 'cadastroformulario'">
+            <CadastroFormulario />
           </div>
 
-          <div v-if="tabAtiva === 'reports'">
-            <Reports />
+          <div v-if="tabAtiva === 'relatorios'">
+            <Relatorios />
           </div>
 
           <div v-if="tabAtiva === 'migration'">

@@ -15,17 +15,29 @@ const coordinators = ref([
   },
 ]);
 
-// Lógica de Filtragem (Equivalente ao useMemo do React)
-const filteredCoordinators = computed(() => {
-  const search = searchTerm.value.toLowerCase();
-  if (!search) return coordinators.value;
+const coordenadores = ref("");
 
-  return coordinators.value.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search) ||
-      c.validationCode.toLowerCase().includes(search) ||
-      c.camp.toLowerCase().includes(search),
-  );
+try {
+  const response = await api.get("/listacoordenadores");
+  coordenadores.value = response.data;
+} catch (e) {
+  console.log("Erro ao buscar lista de coordenadores!");
+}
+
+// Lógica de Filtragem (Equivalente ao useMemo do React)
+// const filteredCoordinators = computed(() => {
+//   const search = searchTerm.value.toLowerCase();
+//   if (!search) return coordinators.value;
+
+//   return coordinators.value.filter(
+//     (c) =>
+//       c.name.toLowerCase().includes(search) ||
+//       c.validationCode.toLowerCase().includes(search) ||
+//       c.camp.toLowerCase().includes(search),
+//   );
+// });
+const filteredCoordinators = computed(() => {
+  return (coordenadores.value || []).filter((c) => c.nome !== null);
 });
 
 // Ações
@@ -100,32 +112,40 @@ const deleteCoordinator = (id) => {
               <th class="px-4 py-3 text-right">Ações</th>
             </tr>
           </thead>
+
           <tbody class="divide-y divide-gray-100">
             <tr
-              v-for="coordinator in filteredCoordinators"
-              :key="coordinator.id"
+              v-for="coordinator in coordenadores"
+              :key="coordinator.codigo"
               class="hover:bg-gray-50 transition-colors"
             >
               <td class="px-4 py-3 font-medium text-gray-900">
-                {{ coordinator.name }}
+                {{ coordinator.nome || "Não informado" }}
               </td>
               <td class="px-4 py-3 text-gray-600">
-                {{ coordinator.document }}
+                {{ coordinator.documento || "-" }}
               </td>
               <td class="px-4 py-3 text-gray-600">
-                {{ coordinator.age }} anos
+                {{ coordinator.idade ? coordinator.idade + " anos" : "-" }}
               </td>
-              <td class="px-4 py-3 text-gray-600">{{ coordinator.camp }}</td>
+              <td class="px-4 py-3 text-gray-600">
+                {{ coordinator.acampamento || "-" }}
+              </td>
               <td class="px-4 py-3">
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200"
                 >
-                  {{ coordinator.validationCode }}
+                  {{ coordinator.codigo }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-gray-600">
-                {{ new Date(coordinator.createdAt).toLocaleDateString() }}
+              <td class="px-4 py-3">
+                <span
+                  class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium"
+                >
+                  {{ coordinator.DataCadastro }}
+                </span>
               </td>
+
               <td class="px-4 py-3 text-right">
                 <div class="flex justify-end gap-1">
                   <button
@@ -133,21 +153,23 @@ const deleteCoordinator = (id) => {
                     class="p-2 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
                     title="Editar"
                   >
-                    <Pencil class="w-4 h-4" />
+                    <i class="fas fa-pencil-alt"></i>
                   </button>
+
                   <button
                     @click="viewQRCode(coordinator)"
                     class="p-2 text-gray-600 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
                     title="Ver QR Code"
                   >
-                    <QrCode class="w-4 h-4" />
+                    <i class="fas fa-qrcode"></i>
                   </button>
+
                   <button
                     @click="deleteCoordinator(coordinator.id)"
                     class="p-2 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"
                     title="Excluir"
                   >
-                    <Trash2 class="w-4 h-4" />
+                    <i class="fas fa-trash-alt"></i>
                   </button>
                 </div>
               </td>

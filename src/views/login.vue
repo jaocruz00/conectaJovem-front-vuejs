@@ -28,6 +28,7 @@ const realizarLogin = async () => {
 
     router.push("/dashboard");
   } catch (e) {
+    alert("Combinação de email e senha incorreto!");
     senha.value = ""; // Boa prática: limpa apenas a senha
   }
 };
