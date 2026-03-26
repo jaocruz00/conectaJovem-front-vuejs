@@ -3,6 +3,14 @@ import { ref, computed } from "vue";
 import api from "/src/services/api.js";
 
 const searchTerm = ref("");
+
+const showModal = ref(false);
+const selectedCoord = ref({});
+const viewQRCode = (coordinator) => {
+  selectedCoord.value = coordinator;
+  showModal.value = true;
+};
+
 const coordinators = ref([
   {
     id: 1,
@@ -45,14 +53,31 @@ const openEditDialog = (coordinator) => {
   console.log("Editando:", coordinator);
 };
 
-const viewQRCode = (coordinator) => {
-  console.log("Vendo QR Code de:", coordinator.name);
-};
-
 const deleteCoordinator = (id) => {
   if (confirm("Tem certeza que deseja excluir este coordenador?")) {
     coordinators.value = coordinators.value.filter((c) => c.id !== id);
   }
+};
+
+const calculateAge = (birthday) => {
+  if (!birthday) return "-";
+
+  const birthDate = new Date(birthday);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+
+  // Ajusta a idade se o mês atual for anterior ao mês de nascimento
+  // ou se for o mesmo mês, mas o dia atual for anterior ao dia de nascimento
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return age + " anos";
 };
 </script>
 
@@ -125,9 +150,13 @@ const deleteCoordinator = (id) => {
               <td class="px-4 py-3 text-gray-600">
                 {{ coordinator.documento || "-" }}
               </td>
-              <td class="px-4 py-3 text-gray-600">
+              <!-- <td class="px-4 py-3 text-gray-600">
                 {{ coordinator.idade ? coordinator.idade + " anos" : "-" }}
+              </td> -->
+              <td class="px-4 py-3 text-gray-600">
+                <span>{{ calculateAge(coordinator.idade) }}</span>
               </td>
+
               <td class="px-4 py-3 text-gray-600">
                 {{ coordinator.acampamento || "-" }}
               </td>
@@ -142,7 +171,11 @@ const deleteCoordinator = (id) => {
                 <span
                   class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium"
                 >
-                  {{ coordinator.DataCadastro }}
+                  {{
+                    new Date(coordinator.DataCadastro).toLocaleDateString(
+                      "pt-BR",
+                    )
+                  }}
                 </span>
               </td>
 
@@ -187,6 +220,85 @@ const deleteCoordinator = (id) => {
             filteredCoordinators.length
           }}</span>
         </p>
+      </div>
+    </div>
+  </div>
+
+  <div
+    v-if="showModal"
+    class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200"
+    >
+      <button
+        @click="showModal = false"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        <i class="fas fa-times text-lg"></i>
+      </button>
+
+      <div class="space-y-4">
+        <div
+          class="bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100"
+        >
+          <div class="text-center space-y-3">
+            <div>
+              <p
+                class="text-[10px] uppercase tracking-widest text-indigo-500 font-bold"
+              >
+                Coordenador
+              </p>
+              <p class="text-gray-900 font-semibold">
+                {{ selectedCoord.name }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-[10px] uppercase tracking-widest text-indigo-500 font-bold"
+              >
+                Acampamento
+              </p>
+              <p class="text-gray-900 font-semibold">
+                {{ selectedCoord.camp || "Não informado" }}
+              </p>
+            </div>
+            <div>
+              <p
+                class="text-[10px] uppercase tracking-widest text-indigo-500 font-bold mb-1"
+              >
+                Código de Validação
+              </p>
+              <span
+                class="inline-block bg-indigo-600 text-white px-3 py-1 rounded text-sm font-mono tracking-wider"
+              >
+                {{ selectedCoord.validationCode }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white border-2 border-dashed border-gray-100 p-4 rounded-xl flex flex-col items-center"
+        >
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Link_pra_pagina_principal_da_Wikipedia-PT_em_codigo_QR_b.svg/330px-Link_pra_pagina_principal_da_Wikipedia-PT_em_codigo_QR_b.svg.png"
+            alt="QR Code"
+            class="w-48 h-48 object-contain"
+          />
+
+          <button
+            class="mt-4 w-full flex items-center justify-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-700 py-2.5 rounded-lg border border-gray-200 transition-all text-sm font-medium"
+          >
+            <i class="fas fa-download text-xs"></i>
+            Baixar QR Code
+          </button>
+        </div>
+
+        <div class="text-[11px] text-gray-400 text-center leading-tight">
+          <p>Este QR Code contém o código de validação do coordenador.</p>
+          <p>Guarde-o com segurança para validação futura.</p>
+        </div>
       </div>
     </div>
   </div>

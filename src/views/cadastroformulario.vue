@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from "vue";
 import api from "/src/services/api.js";
+import { toast } from "vue-sonner";
 
 // --- ESTADO DO FORMULÁRIO PRINCIPAL ---
 const nomeGrupo = ref("");
@@ -86,10 +87,10 @@ const togglePaymentMethod = (methodId) => {
 
 const cancelEditing = () => {
   editandoFormId.value = null;
-  resetForm();
+  resetaFormulario();
 };
 
-const resetForm = () => {
+const resetaFormulario = () => {
   nomeGrupo.value = "";
   nomeFormulario.value = "";
   formDescription.value = "";
@@ -111,6 +112,7 @@ const fetchForms = async () => {
     formulariosSalvos.value = data;
   } catch (error) {
     console.error("Erro ao buscar formulários:", error);
+  } finally {
   }
 };
 
@@ -135,13 +137,23 @@ const saveForm = async () => {
     if (editandoFormId.value) {
       await api.put(`/forms/${editandoFormId.value}`, dadosFormulario);
     } else {
-      await api.post("/criarformulario", dadosFormulario);
+      const res = await api.post("/criarformulario", dadosFormulario);
+
+      if (res.status === 201 || res.status === 200) {
+        toast.success(res.data, {
+          style: { background: "#6ee7b7", color: "#000" },
+        });
+        resetaFormulario();
+      } else {
+        toast.error("Erro ao criar formulario");
+      }
     }
     await fetchForms();
-    resetForm();
+    resetaFormulario();
     editandoFormId.value = null;
   } catch (error) {
     alert("Erro ao salvar formulário");
+    toast.error("Erro ao criar formulario");
   }
 };
 
