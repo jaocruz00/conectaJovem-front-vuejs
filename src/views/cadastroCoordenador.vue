@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive } from "vue";
 import api from "/src/services/api.js";
+import { toast } from "vue-sonner";
 
 const CAMPS = ["Norte", "Sul", "Leste", "Oeste"];
 
@@ -20,6 +21,12 @@ const cadastrarCoordenador = async () => {
   try {
     const response = await api.post("/cadastrarcoordenador", formData);
     console.log("Sucesso:", response.data);
+
+    if (response.status === 201 || response.status === 200) {
+      toast.success("Cadastrado com sucesso", {
+        style: { background: "#6ee7b7", color: "#000" },
+      });
+    }
 
     formData.value = "";
   } catch (error) {
